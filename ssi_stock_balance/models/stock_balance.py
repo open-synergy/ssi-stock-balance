@@ -201,7 +201,7 @@ class StockBalance(models.Model):
     def _01_delete_product_stock_balance(self):
         self.ensure_one()
         for sb in self.product_stock_balance_ids:
-            description = "Delete stock balance product ID %s for %s" % (sb.id)
+            description = "Delete stock balance product ID %s for %s" % (sb.id, self.id)
             (
                 sb.with_context(job_batch=self.cancel_queue_job_batch_id)
                 .delayable(description=_(description))
