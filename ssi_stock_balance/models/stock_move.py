@@ -57,8 +57,8 @@ class StockMove(models.Model):
                     Problem: Date of transfer before product's (%s) latest stock balance
                     Solution: Adjust actual movement date or cancel stock balance
                     """ % (
-                    self._description.lower(),
-                    self.id,
-                    self.product_id.name,
+                    record._description.lower(),
+                    record.id,
+                    record.product_id.name,
                 )
                 raise UserError(_(error_message))
