@@ -200,13 +200,16 @@ class StockBalance(models.Model):
     @ssi_decorator.post_queue_cancel_action()
     def _01_delete_product_stock_balance(self):
         self.ensure_one()
-        for sb in self.product_stock_balance_ids:
-            description = "Delete stock balance product ID %s for %s" % (sb.id, self.id)
-            (
-                sb.with_context(job_batch=self.cancel_queue_job_batch_id)
-                .delayable(description=_(description))
-                .unlink()
-            )
+        description = "Delete product stock balance for stock balance ID %s" % (self.id)
+        (
+            self.with_context(job_batch=self.cancel_queue_job_batch_id)
+            .delayable(description=_(description))
+            ._delete_product_stock_balance()
+        )
+
+    def _delete_product_stock_balance(self):
+        self.ensure_one()
+        self.product_stock_balance_ids.unlink()
 
     def _get_date_list(self):
         self.ensure_one()
