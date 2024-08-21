@@ -79,6 +79,8 @@ class StockBalance(models.Model):
     # Sequence attribute
     _create_sequence_state = "done"
 
+    _auto_enqueue_done = False
+
     type_id = fields.Many2one(
         comodel_name="stock_balance_type",
         string="Type",
@@ -165,6 +167,13 @@ class StockBalance(models.Model):
     @ssi_decorator.post_queue_done_action()
     def _01_generate_stock_balance_report(self):
         self.ensure_one()
+        description = "Generate queue for stock balance ID %s" % (self.id)
+        self.with_context(job_batch=self.done_queue_job_batch_id).with_delay(
+            description=_(description)
+        )._create_stock_balance_delayable()
+
+    def _create_stock_balance_delayable(self):
+        self.ensure_one()
         ProductSB = self.env["product.stock_balance"]
         sb_delayables = []
         for product in self.product_ids:
@@ -196,6 +205,7 @@ class StockBalance(models.Model):
 
             sb_delayables = sb_delayables
             chain(*sb_delayables).delay()
+        self.done_queue_job_batch_id.enqueue()
 
     @ssi_decorator.post_queue_cancel_action()
     def _01_delete_product_stock_balance(self):
