@@ -431,7 +431,7 @@ class ProductStockBalancePicking(models.Model):
             qty_in = qty_out = qty = 0.0
             value_in = value_out = 0.0
             for move in record.stock_move_ids.filtered(lambda r: r.state == "done"):
-                qty += move.product_qty
+                qty = move.product_qty
                 if move.picking_type_id.code == "incoming":
                     qty_in += qty
                 elif move.picking_type_id.code == "outgoing":
