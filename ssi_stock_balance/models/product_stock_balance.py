@@ -436,7 +436,9 @@ class ProductStockBalancePicking(models.Model):
                     qty_in += qty
                 elif move.picking_type_id.code == "outgoing":
                     qty_out += qty
-                for svl in move.stock_valuation_layer_ids:
+                for svl in move.stock_valuation_layer_ids.filtered(
+                    lambda r: r.account_move_id
+                ):
                     if svl.value > 0.0:
                         value_in += svl.value
                     elif svl.value < 0.0:
