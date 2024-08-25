@@ -50,6 +50,15 @@
         </xpath>
         <xpath expr="//page[1]" position="before">
             <page name="product" string="Products">
+
+                <button
+                        name="action_reload_product"
+                        string="Products"
+                        type="object"
+                        class="oe_highlight"
+                        icon="fa-refresh"
+                        attrs="{'invisible':[('state','!=','draft')]}"
+                    />
                 <field
                         name="product_ids"
                         domain="['|',('id','in',allowed_product_ids),('categ_id','child_of',allowed_product_category_ids)]"
