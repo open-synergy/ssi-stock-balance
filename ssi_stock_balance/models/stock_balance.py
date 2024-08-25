@@ -2,6 +2,8 @@
 # Copyright 2024 PT. Simetri Sinergi Indonesia
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from math import ceil
+
 from odoo import _, api, fields, models
 
 from odoo.addons.queue_job.delay import chain
@@ -164,48 +166,89 @@ class StockBalance(models.Model):
             record._create_product_stock_balance()
             record.product_stock_balance_ids._compute_previous_product_stock_balance_id()
 
+    def action_reload_product(self):
+        for record in self.sudo():
+            record._reload_product()
+
+    def _reload_product(self):
+        self.ensure_one()
+        products = self.allowed_product_ids
+        Product = self.env["product.product"]
+        criteria = [("categ_id.id", "child_of", self.allowed_product_category_ids.ids)]
+        products += Product.search(criteria)
+        self.write(
+            {
+                "product_ids": [(6, 0, products.ids)],
+            }
+        )
+
     @ssi_decorator.post_queue_done_action()
-    def _01_generate_stock_balance_report(self):
+    def _01_generate_first_level_queue_done(self):
         self.ensure_one()
-        description = "Generate queue for stock balance ID %s" % (self.id)
-        self.with_context(job_batch=self.done_queue_job_batch_id).with_delay(
-            description=_(description)
-        )._create_stock_balance_delayable()
-
-    def _create_stock_balance_delayable(self):
-        self.ensure_one()
-        ProductSB = self.env["product.stock_balance"]
-        sb_delayables = []
-        for product in self.product_ids:
-            criteria = [
-                ("product_id", "=", product.id),
-                ("stock_balance_id", "=", self.id),
+        product_per_split = 10
+        num_split = ceil(len(self.product_ids) / product_per_split)
+        latest = False
+        for split_number in range(1, num_split + 1):
+            if split_number == num_split:
+                latest = True
+            products = self.product_ids[
+                (product_per_split * split_number)
+                - product_per_split : split_number * product_per_split
             ]
-            for sb in ProductSB.search(criteria):
-                description = "Generate stock balance for product ID %s for %s" % (
-                    product.id,
-                    sb.date,
-                )
-                current_sb_delayable = (
-                    sb.with_context(job_batch=self.done_queue_job_batch_id)
-                    .delayable(description=_(description))
-                    .action_create_stock_balance_warehouse()
-                )
-                sb_delayables.append(current_sb_delayable)
-                description = "Compute beginning value/qty for product ID %s for %s" % (
-                    sb.product_id.id,
-                    sb.date,
-                )
-                current_sb1_delayable = (
-                    sb.with_context(job_batch=self.done_queue_job_batch_id)
-                    .delayable(description=_(description))
-                    .action_compute_beginning()
-                )
-                sb_delayables.append(current_sb1_delayable)
+            description = (
+                "Generate first level done queue for stock balance ID %s split number %s"
+                % (self.id, split_number)
+            )
+            self.with_context(job_batch=self.done_queue_job_batch_id).with_delay(
+                description=_(description)
+            )._generate_second_level_queue_done(products, latest)
 
-            sb_delayables = sb_delayables
-            chain(*sb_delayables).delay()
-        self.done_queue_job_batch_id.enqueue()
+    def _generate_second_level_queue_done(self, products, latest):
+        self.ensure_one()
+        latest_product = False
+        for product in products:
+            if latest and product == products[-1]:
+                latest_product = True
+            description = (
+                "Generate second level done queue for stock balance ID %s Product %s"
+                % (self.id, product.name)
+            )
+            self.with_context(job_batch=self.done_queue_job_batch_id).with_delay(
+                description=_(description)
+            )._generate_third_level_queue_done(product, latest_product)
+
+    def _generate_third_level_queue_done(self, product, latest):
+        self.ensure_one()
+        ProductSB = product_stock_balance = self.env["product.stock_balance"]
+        sb_delayables = []
+        for stock_balance_date in self._get_date_list():
+            product_stock_balance += ProductSB.create(
+                {
+                    "stock_balance_id": self.id,
+                    "product_id": product.id,
+                    "date": fields.Date.to_string(stock_balance_date),
+                }
+            )
+        for sb in product_stock_balance:
+            description = (
+                "Generate third level done queue for stock balance ID %s Product %s Date %s "
+                % (self.id, product.name, sb.date)
+            )
+            current_sb_delayable = (
+                self.with_context(job_batch=self.done_queue_job_batch_id)
+                .delayable(description=_(description))
+                ._generate_final_level_queue_done(sb)
+            )
+            sb_delayables.append(current_sb_delayable)
+
+        chain(*sb_delayables).delay()
+        if latest:
+            self.done_queue_job_batch_id.enqueue()
+
+    def _generate_final_level_queue_done(self, sb):
+        self.ensure_one()
+        sb.action_create_stock_balance_warehouse()
+        sb.action_compute_beginning()
 
     @ssi_decorator.post_queue_cancel_action()
     def _01_delete_product_stock_balance(self):
