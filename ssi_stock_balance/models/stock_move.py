@@ -33,7 +33,9 @@ class StockMove(models.Model):
         tz_company = pytz.timezone(self.env.company.partner_id.tz or "UTC")
         tz_utc = pytz.timezone("UTC")
         for record in self.sudo():
-            if record.state not in ["done", "cancel"]:
+            if record.state != "done" or (
+                self._origin.state != "done" and self.state == "cancel"
+            ):
                 return True
 
             latest_date = record.product_id.latest_stock_balance
