@@ -34,7 +34,7 @@ class StockMove(models.Model):
         tz_utc = pytz.timezone("UTC")
         for record in self.sudo():
             if record.state != "done" or (
-                self._origin.state != "done" and self.state == "cancel"
+                record._origin.state != "done" and record.state == "cancel"
             ):
                 return True
 
