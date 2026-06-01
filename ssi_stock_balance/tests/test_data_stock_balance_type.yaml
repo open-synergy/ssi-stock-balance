@@ -1,0 +1,86 @@
+scenarios:
+  - name: "Stock Balance Type - Create"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Test Stock Balance Type"
+          code: "TSBT"
+      - step: "Assert type created"
+        action: "assert"
+        target: "sbt"
+        asserts:
+          id:
+            type: "value"
+            operator: "is_truthy"
+          name:
+            type: "value"
+            expected: "Test Stock Balance Type"
+          code:
+            type: "value"
+            expected: "TSBT"
+          active:
+            type: "value"
+            expected: true
+
+  - name: "Stock Balance Type - Edit"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Type Before Edit"
+          code: "TBE"
+      - step: "Edit name"
+        action: "write"
+        target: "sbt"
+        values:
+          name: "Type After Edit"
+      - step: "Assert name updated"
+        action: "assert"
+        target: "sbt"
+        asserts:
+          name:
+            type: "value"
+            expected: "Type After Edit"
+
+  - name: "Stock Balance Type - Delete"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Type To Delete"
+          code: "TTD"
+      - step: "Delete type"
+        action: "call"
+        target: "sbt"
+        method: "unlink"
+      - step: "Verify deleted"
+        action: "search"
+        model: "stock_balance_type"
+        domain:
+          - ["code", "=", "TTD"]
+        save_as: "result"
+        expect_count: 0
+
+  - name: "Stock Balance Type - Product selection method default"
+    steps:
+      - step: "Create type with default product selection"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Type With Products"
+          code: "TWP"
+      - step: "Assert default product selection method"
+        action: "assert"
+        target: "sbt"
+        asserts:
+          product_selection_method:
+            type: "value"
+            operator: "is_truthy"

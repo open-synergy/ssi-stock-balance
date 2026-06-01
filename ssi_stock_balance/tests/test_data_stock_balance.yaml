@@ -1,0 +1,263 @@
+scenarios:
+  - name: "Stock Balance - Create and confirm workflow"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Test Type for Balance"
+          code: "TTFB"
+
+      - step: "Create stock balance"
+        action: "create"
+        model: "stock_balance"
+        save_as: "sb"
+        as_user: "base.user_admin"
+        values:
+          type_id: "EVAL: registry['sbt'].id"
+          date_start: 2024-01-01
+          date_end: 2024-01-03
+
+      - step: "Assert stock balance created in draft"
+        action: "assert"
+        target: "sb"
+        asserts:
+          state:
+            type: "value"
+            expected: "draft"
+          type_id:
+            type: "value"
+            operator: "is_truthy"
+
+      - step: "Confirm stock balance"
+        action: "call"
+        target: "sb"
+        method: "action_confirm"
+        as_user: "base.user_admin"
+        asserts:
+          state:
+            type: "value"
+            expected: "confirm"
+
+      - step: "Invalidate cache after confirm"
+        action: "call"
+        target: "sb"
+        method: "invalidate_cache"
+
+  - name: "Stock Balance - Reload product and create product stock balance"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Type for Reload Test"
+          code: "TFTRT"
+
+      - step: "Create product category"
+        action: "create"
+        model: "product.category"
+        save_as: "categ"
+        values:
+          name: "Test Category SB"
+
+      - step: "Create product"
+        action: "create"
+        model: "product.product"
+        save_as: "product"
+        values:
+          name: "Test Product SB"
+          type: "product"
+          categ_id: "EVAL: registry['categ'].id"
+
+      - step: "Create stock balance with product"
+        action: "create"
+        model: "stock_balance"
+        save_as: "sb"
+        as_user: "base.user_admin"
+        values:
+          type_id: "EVAL: registry['sbt'].id"
+          date_start: 2024-02-01
+          date_end: 2024-02-02
+          product_ids:
+            - - 4
+              - "EVAL: registry['product'].id"
+
+      - step: "Assert product added"
+        action: "assert"
+        target: "sb"
+        asserts:
+          product_ids:
+            type: "o2m"
+            check: "count"
+            expected_count: 1
+
+      - step: "Create product stock balance"
+        action: "call"
+        target: "sb"
+        method: "action_create_product_stock_balance"
+        as_user: "base.user_admin"
+
+      - step: "Invalidate cache after create"
+        action: "call"
+        target: "sb"
+        method: "invalidate_cache"
+
+      - step: "Assert product stock balance created"
+        action: "assert"
+        target: "sb"
+        asserts:
+          product_stock_balance_ids:
+            type: "o2m"
+            check: "count"
+            expected_count: 2
+
+  - name: "Stock Balance Type - Allowed products compute"
+    steps:
+      - step: "Create stock balance type with manual product selection"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Type With Manual Products"
+          code: "TWMP"
+          product_selection_method: "manual"
+
+      - step: "Create product for type"
+        action: "create"
+        model: "product.product"
+        save_as: "prod"
+        values:
+          name: "Allowed Product SB"
+          type: "product"
+
+      - step: "Add product to type"
+        action: "write"
+        target: "sbt"
+        values:
+          product_ids:
+            - - 4
+              - "EVAL: registry['prod'].id"
+
+      - step: "Create stock balance with this type"
+        action: "create"
+        model: "stock_balance"
+        save_as: "sb"
+        as_user: "base.user_admin"
+        values:
+          type_id: "EVAL: registry['sbt'].id"
+          date_start: 2024-03-01
+          date_end: 2024-03-01
+
+      - step: "Assert allowed_product_ids is computed"
+        action: "assert"
+        target: "sb"
+        asserts:
+          allowed_product_ids:
+            type: "o2m"
+            check: "count"
+            expected_count: 1
+
+  - name: "Stock Balance - Reload product with category"
+    steps:
+      - step: "Create stock balance type with all selection"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Type for Reload Category Test"
+          code: "TFRCT"
+
+      - step: "Create stock balance"
+        action: "create"
+        model: "stock_balance"
+        save_as: "sb"
+        as_user: "base.user_admin"
+        values:
+          type_id: "EVAL: registry['sbt'].id"
+          date_start: 2024-04-01
+          date_end: 2024-04-01
+
+      - step: "Assert created in draft"
+        action: "assert"
+        target: "sb"
+        asserts:
+          state:
+            type: "value"
+            expected: "draft"
+
+      - step: "Reload product"
+        action: "call"
+        target: "sb"
+        method: "action_reload_product"
+        as_user: "base.user_admin"
+
+      - step: "Invalidate cache"
+        action: "call"
+        target: "sb"
+        method: "invalidate_cache"
+
+  - name: "Product Stock Balance - Compute qty ending"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "sbt"
+        values:
+          name: "Type for Qty Test"
+          code: "TFQT"
+
+      - step: "Create product"
+        action: "create"
+        model: "product.product"
+        save_as: "prod"
+        values:
+          name: "Qty Test Product"
+          type: "product"
+
+      - step: "Create stock balance"
+        action: "create"
+        model: "stock_balance"
+        save_as: "sb"
+        as_user: "base.user_admin"
+        values:
+          type_id: "EVAL: registry['sbt'].id"
+          date_start: 2024-05-01
+          date_end: 2024-05-01
+          product_ids:
+            - - 4
+              - "EVAL: registry['prod'].id"
+
+      - step: "Create product stock balance"
+        action: "call"
+        target: "sb"
+        method: "action_create_product_stock_balance"
+        as_user: "base.user_admin"
+
+      - step: "Invalidate cache"
+        action: "call"
+        target: "sb"
+        method: "invalidate_cache"
+
+      - step: "Search product stock balance record"
+        action: "search"
+        model: "product.stock_balance"
+        domain:
+          - ["stock_balance_id", "=", "EVAL: registry['sb'].id"]
+        save_as: "psb"
+        limit: 1
+
+      - step: "Assert product stock balance has correct date"
+        action: "assert"
+        target: "psb"
+        asserts:
+          date:
+            type: "value"
+            expected: 2024-05-01
+          qty_beginning:
+            type: "value"
+            expected: 0.0
+          qty_ending:
+            type: "value"
+            expected: 0.0
