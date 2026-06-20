@@ -35,6 +35,25 @@
             <field name="picking_type_id" />
             <field name="product_id" />
             <field name="date" />
+            <separator />
+            <group string="Group By">
+                <filter
+                        name="grp_warehouse_id"
+                        string="Warehouse"
+                        context="{'group_by': 'warehouse_id'}"
+                    />
+                <filter
+                        name="grp_picking_type_id"
+                        string="Operation Type"
+                        context="{'group_by': 'picking_type_id'}"
+                    />
+                <filter
+                        name="grp_product_id"
+                        string="Product"
+                        context="{'group_by': 'product_id'}"
+                    />
+                <filter name="grp_date" string="Date" context="{'group_by': 'date'}" />
+            </group>
         </search>
     </field>
 </record>
