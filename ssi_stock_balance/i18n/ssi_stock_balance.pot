@@ -272,6 +272,8 @@ msgstr ""
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance__date
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance_picking__date
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance_warehouse__date
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_picking_view_search
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_warehouse_view_search
 msgid "Date"
 msgstr ""
 
@@ -355,6 +357,13 @@ msgstr ""
 #: model:ir.model.fields,help:ssi_stock_balance.field_stock_balance__activity_type_icon
 #: model:ir.model.fields,help:ssi_stock_balance.field_stock_balance_type__activity_type_icon
 msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: ssi_stock_balance
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_picking_view_search
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_warehouse_view_search
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.stock_balance_view_search
+msgid "Group By"
 msgstr ""
 
 #. module: ssi_stock_balance
@@ -563,6 +572,11 @@ msgid "Number of unread messages"
 msgstr ""
 
 #. module: ssi_stock_balance
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_picking_view_search
+msgid "Operation Type"
+msgstr ""
+
+#. module: ssi_stock_balance
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance__qty_out
 msgid "Out Qty."
 msgstr ""
@@ -602,6 +616,8 @@ msgstr ""
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance__product_id
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance_picking__product_id
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance_warehouse__product_id
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_picking_view_search
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_warehouse_view_search
 #: model_terms:ir.ui.view,arch_db:ssi_stock_balance.stock_balance_type_view_form
 msgid "Product"
 msgstr ""
@@ -746,6 +762,11 @@ msgid "Reviewer"
 msgstr ""
 
 #. module: ssi_stock_balance
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.stock_balance_view_search
+msgid "Start Date"
+msgstr ""
+
+#. module: ssi_stock_balance
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_stock_balance__state
 msgid "State"
 msgstr ""
@@ -867,6 +888,7 @@ msgstr ""
 
 #. module: ssi_stock_balance
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_stock_balance__type_id
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.stock_balance_view_search
 msgid "Type"
 msgstr ""
 
@@ -954,6 +976,8 @@ msgstr ""
 #. module: ssi_stock_balance
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance_picking__warehouse_id
 #: model:ir.model.fields,field_description:ssi_stock_balance.field_product_stock_balance_warehouse__warehouse_id
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_picking_view_search
+#: model_terms:ir.ui.view,arch_db:ssi_stock_balance.product_stock_balance_warehouse_view_search
 msgid "Warehouse"
 msgstr ""
 
