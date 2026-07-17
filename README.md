@@ -19,6 +19,7 @@ Available addons
 addon | version | maintainers | summary
 --- | --- | --- | ---
 [ssi_stock_balance](ssi_stock_balance/) | 14.0.1.10.0 |  | Stock Balance
+[ssi_stock_balance_operating_unit](ssi_stock_balance_operating_unit/) | 14.0.1.0.0 |  | Stock Balance + Operating Unit
 
 [//]: # (end addons)
 

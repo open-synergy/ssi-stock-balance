@@ -9,6 +9,7 @@ setuptools.setup(
     version=version,
     install_requires=[
         'odoo14-addon-ssi_stock_balance',
+        'odoo14-addon-ssi_stock_balance_operating_unit',
     ],
     classifiers=[
         'Programming Language :: Python',
