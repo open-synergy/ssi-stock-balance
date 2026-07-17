@@ -1,0 +1,97 @@
+scenarios:
+  - name: "Create Stock Balance with Operating Unit"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "type"
+        values:
+          name: "Test Stock Balance Type OU 1"
+          code: "TESTSBTYPEOU1"
+
+      - step: "Create stock_balance with operating_unit_id"
+        action: "create"
+        model: "stock_balance"
+        save_as: "record"
+        as_user: "base.user_admin"
+        values:
+          type_id: "REC: type.id"
+          date_start: 2024-01-01
+          date_end: 2024-01-03
+          operating_unit_id: "REF: operating_unit.main_operating_unit"
+
+      - step: "Assert operating_unit_id is set"
+        action: "assert"
+        target: "record"
+        asserts:
+          operating_unit_id:
+            type: "value"
+            operator: "is_truthy"
+
+  - name: "User without operating unit access cannot read or write"
+    steps:
+      - step: "Create stock balance type"
+        action: "create"
+        model: "stock_balance_type"
+        save_as: "type"
+        values:
+          name: "Test Stock Balance Type OU 2"
+          code: "TESTSBTYPEOU2"
+
+      - step: "Create restricted operating unit"
+        action: "create"
+        model: "operating.unit"
+        save_as: "ou_restricted"
+        values:
+          name: "OU Restricted Test SB"
+          code: "OURESTRICTEDTESTSB"
+          partner_id: "REC: company.partner_id.id"
+
+      - step: "Create user without access to main operating unit"
+        action: "create"
+        model: "res.users"
+        save_as: "restricted_user"
+        values:
+          name: "Restricted OU User SB"
+          login: "restricted_ou_user_sb@example.com"
+          groups_id:
+            - - 6
+              - 0
+              - - "REF: base.group_user"
+                - "REF: ssi_stock_balance.stock_balance_user_group"
+                - "REF:
+                  ssi_stock_balance_operating_unit.stock_balance_ou_group"
+          assigned_operating_unit_ids:
+            - - 6
+              - 0
+              - - "REC: ou_restricted.id"
+
+      - step: "Create stock_balance with main operating unit"
+        action: "create"
+        model: "stock_balance"
+        save_as: "record"
+        as_user: "base.user_admin"
+        values:
+          type_id: "REC: type.id"
+          date_start: 2024-01-01
+          date_end: 2024-01-03
+          operating_unit_id: "REF: operating_unit.main_operating_unit"
+
+      - step: "Restricted user cannot read the record"
+        action: "call"
+        target: "record"
+        method: "read"
+        args:
+          - - "date_start"
+        as_user: "restricted_user"
+        expect_error:
+          type: "AccessError"
+
+      - step: "Restricted user cannot write the record"
+        action: "write"
+        target: "record"
+        as_user: "restricted_user"
+        expect_error:
+          type: "AccessError"
+        values:
+          date_end: 2024-01-05
