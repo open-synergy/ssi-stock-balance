@@ -59,8 +59,7 @@ scenarios:
               - 0
               - - "REF: base.group_user"
                 - "REF: ssi_stock_balance.stock_balance_user_group"
-                - "REF:
-                  ssi_stock_balance_operating_unit.stock_balance_ou_group"
+                - "REF: ssi_stock_balance_operating_unit.stock_balance_ou_group"
           assigned_operating_unit_ids:
             - - 6
               - 0

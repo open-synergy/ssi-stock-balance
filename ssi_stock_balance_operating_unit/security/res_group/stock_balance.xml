@@ -11,10 +11,7 @@
         />
 </record>
 
-<record
-        id="ssi_stock_balance.stock_balance_company_group"
-        model="res.groups"
-    >
+<record id="ssi_stock_balance.stock_balance_company_group" model="res.groups">
     <field name="implied_ids" eval="[(4, ref('stock_balance_ou_group'))]" />
 </record>
 </odoo>
